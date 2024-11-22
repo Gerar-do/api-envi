@@ -5,13 +5,21 @@ import { GetUserUseCase } from '../../application/GetUser-UseCase';
 import { UpdateUserUseCase } from '../../application/UpdateUser-UseCase';
 import { DeleteUserUseCase } from '../../application/DeleteUser-UseCase';
 import { ListUsersUseCase } from '../../application/ListUser-UseCase';
+import { v4 as uuidv4 } from 'uuid';
 
 const userRepository = new UserRepository();
 
 export const createUser = async (req: Request, res: Response) => {
   try {
     const useCase = new CreateUserUseCase(userRepository);
-    const user = await useCase.execute(req.body);
+
+    // Generar UUID automáticamente antes de crear el usuario
+    const userWithUUID = {
+      ...req.body,
+      uuid: uuidv4(),  // Genera un UUID único
+    };
+
+    const user = await useCase.execute(userWithUUID);
     res.status(201).json({ message: "Usuario creado con éxito", user });
   } catch (error) {
     let errorMessage = "Error al crear el usuario";
