@@ -1,12 +1,16 @@
 import express from 'express';
-import { createUser, getUser, updateUser, deleteUser, listUsers } from '../controller/UserController';
+import { createUser, getUser, getUserByUUID, updateUser, deleteUser, listUsers } from '../controller/UserController';
+import { authenticateToken } from '../Middleware/AuthMiddleware';
 
 const router = express.Router();
 
-router.post('/', createUser);
-router.get('/:id', getUser);
+router.post('/', createUser); //para crear el usuario
+
+
+router.get('/:id',authenticateToken, getUser);
+router.get('/uuid/:uuid',authenticateToken, getUserByUUID); // Nueva ruta
 router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
-router.get('/', listUsers);
+router.delete('/:id',authenticateToken, deleteUser);
+router.get('/',authenticateToken, listUsers);
 
 export default router;
