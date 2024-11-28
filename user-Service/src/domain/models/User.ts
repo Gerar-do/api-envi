@@ -6,5 +6,6 @@ export interface User {
     Correo: string;
     contraseña: string;
     Foto_perfil: string;
+    telefono: string; // Nuevo campo
     isActive: boolean;
-} 
+}

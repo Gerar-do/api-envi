@@ -30,6 +30,7 @@ class Database {
             table.string('Correo').notNullable().unique();
             table.string('contraseña').notNullable();
             table.string('Foto_perfil');
+            table.string('telefono'); // Nuevo campo
             table.boolean('isActive').defaultTo(true);
           }).then(() => console.log('Tabla "users" creada.'))
             .catch((error) => console.error('Error al crear la tabla "users":', error));

@@ -21,6 +21,13 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
     const userId = Number(req.params.id);
     const updateData = req.body;
 
+    if (updateData.telefono && !/^\d{10}$/.test(updateData.telefono)) {
+      res.status(400).json({
+        message: 'El número de teléfono debe contener exactamente 10 dígitos'
+      });
+      return;
+    }
+
     if (req.file) {
       updateData.Foto_perfil = (req.file as any).key;
     }
@@ -48,12 +55,18 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
 
 export const createUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { email, password, nombre, apellido } = req.body;
+    const { email, password, nombre, apellido, telefono } = req.body;
 
     if (!email || !password || !nombre || !apellido) {
       res.status(400).json({
-        success: false,
         message: 'Todos los campos son obligatorios',
+      });
+      return;
+    }
+
+    if (!/^\d{10}$/.test(telefono)) {
+      res.status(400).json({
+        message: 'El número de teléfono debe contener exactamente 10 dígitos'
       });
       return;
     }
@@ -73,7 +86,8 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       Apellido: apellido,
       uuid: uuidv4(),
       isActive: true,
-      Foto_perfil: profilePictureKey
+      Foto_perfil: profilePictureKey,
+      telefono
     };
 
     const useCase = new CreateUserUseCase(userRepository);
@@ -81,7 +95,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 
     if (!user) {
       res.status(500).json({ 
-        success: false,
         message: 'Error al crear el usuario' 
       });
       return;
@@ -92,7 +105,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     }
 
     res.status(201).json({
-      success: true,
       message: 'Usuario creado con éxito',
       user,
     });
