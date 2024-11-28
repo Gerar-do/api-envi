@@ -8,5 +8,5 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist"
   },
-  "include": ["src/**/*.ts", "src/express.d.ts"]  // Asegúrate de incluir express.d.ts
+  "include": ["src/**/*.ts", "src/types/express.d.ts"]  // Asegúrate de incluir express.d.ts
 }
