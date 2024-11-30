@@ -11,8 +11,19 @@ import config from '../../../config/config';
 import { getSignedImageUrl } from '../../../config/s3Config';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
+
+interface CaptainVerifyResponse {
+  result: string;
+  success: boolean;
+  message: string;
+  email: string;
+  credits: number;
+  details: string;
+}
 
 const userRepository = new UserRepository();
+const CAPTAIN_VERIFY_API_KEY = 's7h3e5dWi8eLfidYP0uOUhffeaicXkxI';
 
 export const uploadProfilePicture = upload.single('profile-picture');
 
@@ -62,6 +73,31 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
         message: 'Todos los campos son obligatorios',
       });
       return;
+    }
+
+    if (password.length < 8) {
+      res.status(400).json({
+        message: 'La contraseña debe tener al menos 8 caracteres'
+      });
+      return;
+    }
+
+    try {
+      const verifyResponse = await axios.get<CaptainVerifyResponse>(
+        `https://api.captainverify.com/v2/verify?apikey=${CAPTAIN_VERIFY_API_KEY}&email=${encodeURIComponent(email)}`
+      );
+      
+      console.log('Verification response:', verifyResponse.data);
+      
+      if (!verifyResponse.data.success && verifyResponse.data.message !== 'Not enough credits') {
+        res.status(400).json({
+          message: 'El correo electrónico proporcionado no es válido'
+        });
+        return;
+      }
+    } catch (verifyError) {
+      console.error('Error verificando email:', verifyError);
+      // Continuar con la creación del usuario
     }
 
     if (!/^\d{10}$/.test(telefono)) {

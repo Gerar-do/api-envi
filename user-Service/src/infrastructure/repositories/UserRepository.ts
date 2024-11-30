@@ -17,7 +17,7 @@ export class UserRepository implements IUserRepository {
 
   async getUserByUUID(uuid: string): Promise<User | null> {
     const user = await this.db('users').where({ uuid }).first();
-    return user || null; // Implementación simple
+    return user || null;
   }
 
   async updateUser(id: number, userData: Partial<User>): Promise<User | null> {
@@ -45,6 +45,49 @@ export class UserRepository implements IUserRepository {
       return user || null;
     } catch (error) {
       console.error('Error en UserRepository.getUserByEmail:', error);
+      throw error;
+    }
+  }
+
+  async getUserByPhone(telefono: string): Promise<User | null> {
+    try {
+      console.log('Buscando teléfono:', telefono);
+
+      // Limpiar el número para la búsqueda
+      let searchPhone = telefono.replace(/\D/g, '');
+      if (searchPhone.startsWith('5219')) {
+        searchPhone = '52' + searchPhone.slice(4);
+      }
+      if (searchPhone.startsWith('52')) {
+        searchPhone = searchPhone.slice(2);
+      }
+
+      console.log('Número limpio para búsqueda:', searchPhone);
+
+      // Buscar en diferentes formatos
+      const user = await this.db('users')
+        .where('telefono', telefono)
+        .orWhere('telefono', `+52${searchPhone}`)
+        .orWhere('telefono', `+5219${searchPhone}`)
+        .orWhere('telefono', searchPhone)
+        .orWhere('telefono', `52${searchPhone}`)
+        .first();
+      
+      console.log('SQL Query:', this.db('users')
+        .where('telefono', telefono)
+        .orWhere('telefono', `+52${searchPhone}`)
+        .orWhere('telefono', `+5219${searchPhone}`)
+        .orWhere('telefono', searchPhone)
+        .orWhere('telefono', `52${searchPhone}`).toString());
+
+      console.log('Resultado de la consulta telefono:', user ? 'Usuario encontrado' : 'Usuario no encontrado');
+      if (user) {
+        console.log('Teléfono encontrado en formato:', user.telefono);
+      }
+
+      return user || null;
+    } catch (error) {
+      console.error('Error en getUserByPhone:', error);
       throw error;
     }
   }

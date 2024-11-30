@@ -5,8 +5,12 @@ import authRoutes from './infrastructure/adapters/routes/AuthRoutes';
 import config from './config/config';
 
 const app = express();
+
+
 app.use(cors());
 app.use(express.json());
+
+
 
 app.use('/', userRoutes);
 app.use('/auth', authRoutes);
