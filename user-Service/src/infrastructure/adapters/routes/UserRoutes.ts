@@ -24,6 +24,6 @@ router.put('/:id', validateToken, uploadProfilePicture, updateUser);
 router.delete('/:id', validateToken, deleteUser);
 
 // Crear usuario (no requiere token)
-router.post('/', uploadProfilePicture, createUser);
+router.post('/register', uploadProfilePicture, createUser);
 
 export default router;
