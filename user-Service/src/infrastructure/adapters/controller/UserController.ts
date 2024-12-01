@@ -27,16 +27,37 @@ const CAPTAIN_VERIFY_API_KEY = 's7h3e5dWi8eLfidYP0uOUhffeaicXkxI';
 
 export const uploadProfilePicture = upload.single('profile-picture');
 
+// Función auxiliar para verificar si existe un teléfono
+async function isPhoneNumberTaken(telefono: string): Promise<boolean> {
+  const useCase = new ListUsersUseCase(userRepository);
+  const users = await useCase.execute();
+  return users.some(user => user.telefono === telefono);
+}
+
 export const updateUser = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = Number(req.params.id);
     const updateData = req.body;
 
-    if (updateData.telefono && !/^\d{10}$/.test(updateData.telefono)) {
-      res.status(400).json({
-        message: 'El número de teléfono debe contener exactamente 10 dígitos'
-      });
-      return;
+    if (updateData.telefono) {
+      // Verificar formato del teléfono
+      if (!/^\d{10}$/.test(updateData.telefono)) {
+        res.status(400).json({
+          message: 'El número de teléfono debe contener exactamente 10 dígitos'
+        });
+        return;
+      }
+
+      // Verificar si el teléfono ya está en uso por otro usuario
+      const phoneExists = await isPhoneNumberTaken(updateData.telefono);
+      const currentUser = await new GetUserUseCase(userRepository).execute(userId);
+      
+      if (phoneExists && currentUser?.telefono !== updateData.telefono) {
+        res.status(400).json({
+          message: 'El número de teléfono ya está registrado por otro usuario'
+        });
+        return;
+      }
     }
 
     if (req.file) {
@@ -82,6 +103,22 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       return;
     }
 
+    if (!/^\d{10}$/.test(telefono)) {
+      res.status(400).json({
+        message: 'El número de teléfono debe contener exactamente 10 dígitos'
+      });
+      return;
+    }
+
+    // Verificar si el teléfono ya está registrado
+    const phoneExists = await isPhoneNumberTaken(telefono);
+    if (phoneExists) {
+      res.status(400).json({
+        message: 'El número de teléfono ya está registrado'
+      });
+      return;
+    }
+
     try {
       const verifyResponse = await axios.get<CaptainVerifyResponse>(
         `https://api.captainverify.com/v2/verify?apikey=${CAPTAIN_VERIFY_API_KEY}&email=${encodeURIComponent(email)}`
@@ -98,13 +135,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     } catch (verifyError) {
       console.error('Error verificando email:', verifyError);
       // Continuar con la creación del usuario
-    }
-
-    if (!/^\d{10}$/.test(telefono)) {
-      res.status(400).json({
-        message: 'El número de teléfono debe contener exactamente 10 dígitos'
-      });
-      return;
     }
 
     const saltRounds = 10;
