@@ -2,13 +2,15 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 // IPublication.ts
 export interface IPublication {
-  _id?: string;
+  id?: string;         // Añade el id
   title: string;
   description: string;
   type: 'free' | 'paid';
   price: number;
   userId: string;
   imageUrl: string;
+  originalImageKey?: string;  // Añade originalImageKey como opcional
+  // otros campos que puedas tener...
 }
 
 const publicationSchema = new Schema<IPublication>({

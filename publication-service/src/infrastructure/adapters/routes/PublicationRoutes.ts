@@ -1,4 +1,3 @@
-// src/infrastructure/routes/PublicationRoutes.ts
 import express, { Router } from 'express';
 import multer from 'multer';
 import { StorageEngine } from 'multer';
@@ -16,9 +15,12 @@ import { S3Service } from '../../services/S3Service';
 
 const router = express.Router();
 
+// Configuración de Multer para el almacenamiento en memoria
 const multerStorage: StorageEngine = multer.memoryStorage();
+
+// Configuración de Multer para el manejo de archivos
 const upload = multer({
-    storage: multerStorage,  // Usamos multerStorage en lugar de storage
+    storage: multerStorage,
     limits: {
         fileSize: 5 * 1024 * 1024 // 5MB
     },
@@ -29,44 +31,52 @@ const upload = multer({
             cb(new Error('Solo se permiten imágenes'));
         }
     }
-}).single('imagen');
+}).single('image'); // Cambiado a 'image' para mayor consistencia
 
-// Middleware para manejar errores de multer
+// Middleware mejorado para el manejo de subida de archivos
 const uploadMiddleware = (req: any, res: any, next: any) => {
-  upload(req, res, function (err) {
-      console.log('Form fields received:', req.body);
-      console.log('Files received:', req.files);
-      console.log('Single file:', req.file);
-      
-      if (err instanceof multer.MulterError) {
-          if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-              return res.status(400).json({
-                  message: 'Campo de archivo incorrecto',
-                  details: 'Use el nombre "imagen" para el campo del archivo',
-                  error: err.message
-              });
-          }
-          return res.status(400).json({
-              message: 'Error al subir el archivo',
-              error: err.message
-          });
-      } else if (err) {
-          return res.status(500).json({
-              message: 'Error al procesar el archivo',
-              error: err.message
-          });
-      }
-      
-      if (!req.file) {
-          return res.status(400).json({
-              message: 'No se encontró ningún archivo',
-              tip: 'Asegúrese de enviar un archivo con el nombre "imagen"'
-          });
-      }
-      
-      next();
-  });
+    upload(req, res, function (err) {
+        // Logs para debugging
+        console.log('Request body:', req.body);
+        console.log('Request file:', req.file);
+
+        if (err instanceof multer.MulterError) {
+            if (err.code === 'LIMIT_FILE_SIZE') {
+                return res.status(400).json({
+                    message: 'El archivo es demasiado grande',
+                    details: 'El tamaño máximo permitido es 5MB'
+                });
+            }
+            if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+                return res.status(400).json({
+                    message: 'Campo de archivo incorrecto',
+                    details: 'Use el nombre "image" para el campo del archivo'
+                });
+            }
+            return res.status(400).json({
+                message: 'Error al subir el archivo',
+                error: err.message
+            });
+        } else if (err) {
+            return res.status(500).json({
+                message: 'Error al procesar el archivo',
+                error: err.message
+            });
+        }
+
+        // Solo validar el archivo si la ruta lo requiere
+        const isCreateRoute = req.path === '/create';
+        if (isCreateRoute && !req.file) {
+            return res.status(400).json({
+                message: 'Se requiere una imagen',
+                details: 'Debe enviar una imagen con el campo "image"'
+            });
+        }
+
+        next();
+    });
 };
+
 // Inicialización de servicios y casos de uso
 const publicationRepository = new PublicationRepository();
 const s3Service = new S3Service();
@@ -107,7 +117,7 @@ const setupPublicationRoutes = (): Router => {
 
     router.put('/:id', 
         validateToken, 
-        uploadMiddleware,
+        uploadMiddleware,  // El middleware ahora es más flexible con el PUT
         publicationController.updatePublication.bind(publicationController)
     );
 
