@@ -1,6 +1,6 @@
 import { IUserRepository } from '../../domain/interfaces/IUserRepository';
 import { User } from '../../domain/models/User';
-import { Database } from '../../infrastructure/database/msql';
+import { Database } from '../database/msql';
 
 export class UserRepository implements IUserRepository {
   private db = Database.getInstance();

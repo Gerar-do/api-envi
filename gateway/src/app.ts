@@ -28,9 +28,13 @@ dotenv.config();
 const PORT = process.env.PORT || 3000;
 
 
+
 app.use('/api/v1/user', proxy('http://localhost:3001'));
 app.use('/api/v1/analytics', proxy('http://localhost:3002'));
 app.use('/api/v1/publication', proxy('http://localhost:3003'));
+
+
+
 
 app.use(errorMiddleware); //middleware de manejo de errores 
 
