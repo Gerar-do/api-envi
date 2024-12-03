@@ -39,11 +39,40 @@ export const updateUser = async (req: Request, res: Response, next: NextFunction
     const userId = Number(req.params.id);
     const updateData = req.body;
 
-    if (updateData.telefono) {
-      // Verificar formato del teléfono
-      if (!/^\d{10}$/.test(updateData.telefono)) {
+    // Validar el formato del nombre y apellido si se proporcionan
+    const nameRegex = /^[A-Za-zÀ-ÿ\s]+$/;
+    if (updateData.Nombre && !nameRegex.test(updateData.Nombre)) {
+      res.status(400).json({
+        message: 'El nombre solo puede contener letras'
+      });
+      return;
+    }
+
+    if (updateData.Apellido && !nameRegex.test(updateData.Apellido)) {
+      res.status(400).json({
+        message: 'El apellido solo puede contener letras'
+      });
+      return;
+    }
+
+    // Si se está actualizando la contraseña, hacer el hash
+    if (updateData.contraseña) {
+      if (updateData.contraseña.length < 8) {
         res.status(400).json({
-          message: 'El número de teléfono debe contener exactamente 10 dígitos'
+          message: 'La contraseña debe tener al menos 8 caracteres'
+        });
+        return;
+      }
+      const saltRounds = 10;
+      updateData.contraseña = await bcrypt.hash(updateData.contraseña, saltRounds);
+    }
+
+    if (updateData.telefono) {
+      // Verificar que el teléfono solo contenga números y tenga 10 dígitos
+      const phoneRegex = /^\d{10}$/;
+      if (!phoneRegex.test(updateData.telefono)) {
+        res.status(400).json({
+          message: 'El teléfono debe contener exactamente 10 dígitos numéricos'
         });
         return;
       }
@@ -89,13 +118,31 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
   try {
     const { email, password, nombre, apellido, telefono } = req.body;
 
-    if (!email || !password || !nombre || !apellido) {
+    // Validación de campos requeridos
+    if (!email || !password || !nombre || !apellido || !telefono) {
       res.status(400).json({
         message: 'Todos los campos son obligatorios',
       });
       return;
     }
 
+    // Validar que nombre y apellido solo contengan letras
+    const nameRegex = /^[A-Za-zÀ-ÿ\s]+$/;
+    if (!nameRegex.test(nombre)) {
+      res.status(400).json({
+        message: 'El nombre solo puede contener letras'
+      });
+      return;
+    }
+
+    if (!nameRegex.test(apellido)) {
+      res.status(400).json({
+        message: 'El apellido solo puede contener letras'
+      });
+      return;
+    }
+
+    // Validar longitud mínima de la contraseña
     if (password.length < 8) {
       res.status(400).json({
         message: 'La contraseña debe tener al menos 8 caracteres'
@@ -103,9 +150,11 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
       return;
     }
 
-    if (!/^\d{10}$/.test(telefono)) {
+    // Validar que el teléfono solo contenga números y tenga 10 dígitos
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(telefono)) {
       res.status(400).json({
-        message: 'El número de teléfono debe contener exactamente 10 dígitos'
+        message: 'El teléfono debe contener exactamente 10 dígitos numéricos'
       });
       return;
     }
@@ -217,7 +266,7 @@ export const deleteUser = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-export const listUsers = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const listUsers = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const useCase = new ListUsersUseCase(userRepository);
     const users = await useCase.execute();

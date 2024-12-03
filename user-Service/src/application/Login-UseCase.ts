@@ -41,6 +41,7 @@ export class LoginUseCase {
           id: user.id,
           uuid: user.uuid,
           email: user.Correo,
+          Nombre: user.Nombre,
           profilePicture
         },
         config.jwt.secret,

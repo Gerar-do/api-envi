@@ -1,24 +1,32 @@
-// src/app.ts
-import express from 'express';
+// app.ts
+import express, { Application } from 'express';
 import cors from 'cors';
 import { config } from './infrastructure/config/config';
 import { connectDB } from './infrastructure/config/MongoDB';
+import { initDB as initializePostgresDatabase } from './infrastructure/config/PostgresDB';
 import setupPublicationRoutes from './infrastructure/adapters/routes/PublicationRoutes';
+import commentRoutes from './infrastructure/adapters/routes/CommentRoutes';
 
-const app = express();
+const app: Application = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Configurar rutas
+// Configure routes
 app.use('/', setupPublicationRoutes());
+app.use('/comments', commentRoutes);
 
-// Conectar a la base de datos y arrancar el servidor
-connectDB().then(() => {
+// Connect to databases and start the server
+Promise.all([connectDB(), initializePostgresDatabase()])
+  .then(() => {
     app.listen(config.port, () => {
-        console.log(`Server running on port ${config.port}`);
+      console.log(`Server running on port ${config.port}`);
     });
-});
+  })
+  .catch(error => {
+    console.error('Error starting server:', error);
+    process.exit(1);
+  });
 
 export default app;

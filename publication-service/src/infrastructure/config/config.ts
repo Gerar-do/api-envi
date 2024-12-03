@@ -13,4 +13,11 @@ export const config = {
     region: process.env.AWS_REGION || '',
     bucketName: process.env.S3_BUCKET_NAME || '',
   },
+  postgres: {
+    user: process.env.POSTGRES_USER || 'postgres',
+    host: process.env.POSTGRES_HOST || 'localhost',
+    database: process.env.POSTGRES_DB || 'comentbd',
+    password: process.env.POSTGRES_PASSWORD || '211228',
+    port: parseInt(process.env.POSTGRES_PORT || '5434'),
+  }
 };
