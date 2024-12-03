@@ -44,7 +44,7 @@ export class PublicationController {
     }
 
     private async addPresignedUrlToPublication(publication: any): Promise<any> {
-        if (publication && publication.imageUrl) {
+        if (publication?.imageUrl) {
             try {
                 const presignedUrl = await this.s3Service.getPresignedUrl(publication.imageUrl);
                 return {
@@ -119,7 +119,7 @@ export class PublicationController {
 
     async updatePublication(req: Request, res: Response): Promise<void> {
         try {
-            const id = req.params.id;
+            const { id } = req.params;
             const updateData: Partial<IPublication> = { ...req.body };
 
             if (req.file) {
@@ -145,10 +145,10 @@ export class PublicationController {
                 message: 'Publicación modificada con éxito',
                 data: cleanPublication
             });
-        } catch (error: any) {
+        } catch (error) {
             res.status(500).json({ 
                 message: 'Error al actualizar la publicación',
-                error: error.message 
+                error: error instanceof Error ? error.message : 'Unknown error'
             });
         }
     }
@@ -162,10 +162,10 @@ export class PublicationController {
             }
             const cleanPublication = await this.addPresignedUrlToPublication(publication);
             res.json(cleanPublication);
-        } catch (error: any) {
+        } catch (error) {
             res.status(500).json({ 
                 message: 'Error al obtener la publicación',
-                error: error.message 
+                error: error instanceof Error ? error.message : 'Unknown error'
             });
         }
     }
@@ -175,23 +175,23 @@ export class PublicationController {
             const publications = await this.getUserPublicationsUseCase.execute(req.params.userId);
             const cleanPublications = await this.addPresignedUrlToPublications(publications);
             res.json(cleanPublications);
-        } catch (error: any) {
+        } catch (error) {
             res.status(500).json({ 
                 message: 'Error al obtener las publicaciones del usuario',
-                error: error.message 
+                error: error instanceof Error ? error.message : 'Unknown error'
             });
         }
     }
 
-    async getAllPublications(req: Request, res: Response): Promise<void> {
+    async getAllPublications(_: Request, res: Response): Promise<void> {
         try {
             const publications = await this.getAllPublicationsUseCase.execute();
             const cleanPublications = await this.addPresignedUrlToPublications(publications);
             res.json(cleanPublications);
-        } catch (error: any) {
+        } catch (error) {
             res.status(500).json({ 
                 message: 'Error al obtener las publicaciones',
-                error: error.message 
+                error: error instanceof Error ? error.message : 'Unknown error'
             });
         }
     }
@@ -202,10 +202,10 @@ export class PublicationController {
             const publications = await this.getPublicationsByTypeUseCase.execute(type);
             const cleanPublications = await this.addPresignedUrlToPublications(publications);
             res.json(cleanPublications);
-        } catch (error: any) {
+        } catch (error) {
             res.status(500).json({ 
                 message: 'Error al obtener las publicaciones por tipo',
-                error: error.message 
+                error: error instanceof Error ? error.message : 'Unknown error'
             });
         }
     }
@@ -218,7 +218,7 @@ export class PublicationController {
                 return;
             }
 
-            if (publication?.imageUrl) {
+            if (publication.imageUrl) {
                 await this.s3Service.deleteImage(publication.imageUrl).catch(err => {
                     console.error('Error deleting image:', err);
                 });
@@ -228,10 +228,10 @@ export class PublicationController {
             res.status(200).json({ 
                 message: 'Publicación eliminada con éxito'
             });
-        } catch (error: any) {
+        } catch (error) {
             res.status(500).json({ 
                 message: 'Error al eliminar la publicación',
-                error: error.message 
+                error: error instanceof Error ? error.message : 'Unknown error'
             });
         }
     }

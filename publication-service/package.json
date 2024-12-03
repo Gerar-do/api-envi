@@ -24,9 +24,12 @@
   },
   "name": "publication-service",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/app.js",
   "scripts": {
-    "dev": "nodemon src/app.ts"
+    "dev": "nodemon src/app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "postinstall": "npm run build"
   },
   "keywords": [],
   "author": "",
