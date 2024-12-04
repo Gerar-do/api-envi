@@ -3,18 +3,18 @@ import rateLimit from 'express-rate-limit';
 import proxy from 'express-http-proxy';
 import morgan from 'morgan';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import { Signale } from "signale";
 import { errorMiddleware } from './middleware/errorMiddleware';
 import { eventPublisher } from './events/eventPublisher';
+import { config } from './config/config';
 
 const app: Application = express();
 const signale = new Signale();
 
 // Rate limiter configuration
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 6, // 6 requests per windowMs
+    windowMs: config.rateLimit.windowMs,
+    max: config.rateLimit.max,
     message: 'Demasiadas peticiones desde esta IP, por favor intente de nuevo después de 15 minutos',
     standardHeaders: true,
     legacyHeaders: false,
@@ -22,27 +22,20 @@ const limiter = rateLimit({
 
 app.use(morgan('dev'));
 app.use(cors());
-dotenv.config();
 app.use(limiter);
 
-const PORT = process.env.PORT || 3000;
+// Proxy routes using environment variables
+app.use('/api/v1/user', proxy(config.services.user));
+app.use('/api/v1/analytics', proxy(config.services.analytics));
+app.use('/api/v1/publication', proxy(config.services.publication));
 
+app.use(errorMiddleware);
 
-
-app.use('/api/v1/user', proxy('http://localhost:3001'));
-app.use('/api/v1/analytics', proxy('http://localhost:3002'));
-app.use('/api/v1/publication', proxy('http://localhost:3003'));
-
-
-
-
-app.use(errorMiddleware); //middleware de manejo de errores 
-
-// Escuchar el evento de autenticación exitosa
 eventPublisher.on('authSuccess', (data) => {
     console.log('Autenticación exitosa para el usuario:', data.user);
 });
 
-app.listen(PORT, () => {
-    signale.success(`Servidor corriendo en http://localhost:${PORT}`);
+app.listen(config.port, () => {
+    signale.success(`Servidor corriendo en http://localhost:${config.port}`);
 });
+
