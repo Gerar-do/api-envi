@@ -7,7 +7,7 @@ import { DeleteUserUseCase } from '../../../application/DeleteUser-UseCase';
 import { ListUsersUseCase } from '../../../application/ListUser-UseCase';
 import { GetUserByUUIDUseCase } from '../../../application/GetUserByUUID-UseCase';
 import upload from '../../Middleware/multerS3Middleware';
-import config from '../../../config/config'; 
+import config from '../../../config/config';
 import { getSignedImageUrl } from '../../../config/s3Config';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';

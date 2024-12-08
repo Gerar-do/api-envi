@@ -95,7 +95,7 @@ const publicationController = new PublicationController(
 // Configuración de rutas
 const setupPublicationRoutes = (): Router => {
     // Rutas públicas
-    router.get('/', publicationController.getAllPublications.bind(publicationController));
+    router.get('/all', publicationController.getAllPublications.bind(publicationController));
     router.get('/type/:type', publicationController.getPublicationsByType.bind(publicationController));
 
     // Rutas protegidas

@@ -7,7 +7,7 @@ const s3Client = new S3Client({
   credentials: {
     accessKeyId: config.s3.accessKeyId,
     secretAccessKey: config.s3.secretAccessKey,
-    sessionToken: config.s3.sessionToken
+    //sessionToken: config.s3.sessionToken
   }
 });
 

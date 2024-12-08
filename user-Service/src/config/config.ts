@@ -16,7 +16,7 @@ export default {
   s3: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || 'default_key',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || 'default_secret',
-    sessionToken: process.env.AWS_SESSION_TOKEN, // Añade esta línea
+   // sessionToken: process.env.AWS_SESSION_TOKEN, // Añade esta línea
     region: process.env.AWS_REGION || 'us-east-1',
     bucketName: process.env.S3_BUCKET_NAME || ''
   }

@@ -24,11 +24,14 @@ export async function initDB() {
         user_id VARCHAR(255) NOT NULL,
         user_name VARCHAR(255) NOT NULL,
         content TEXT NOT NULL,
+        sentiment INTEGER,
+        toxicity_score DECIMAL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
 
       CREATE INDEX idx_comments_publication_id ON comments(publication_id);
+      CREATE INDEX idx_comments_sentiment ON comments(sentiment);
     `);
 
     console.log('Base de datos inicializada correctamente');

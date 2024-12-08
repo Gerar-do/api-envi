@@ -20,7 +20,7 @@ app.use('/comments', commentRoutes);
 // Connect to databases and start the server
 Promise.all([connectDB(), initializePostgresDatabase()])
   .then(() => {
-    app.listen(config.port, () => {
+    app.listen(3003,"0.0.0.0", () => {
       console.log(`Server running on port ${config.port}`);
     });
   })
